@@ -1,4 +1,4 @@
-# Node Wave Base Repositories for Backend
+# Sipema Repositories for Backend
 
 ## Tech Stacks
 
@@ -9,7 +9,7 @@
 - Logging : Winston + Morgan
 
 > [!NOTE]  
->  As stated in Getting Started parts of our notion, don't forget to make sure that you have Node.js >= 16.14.2 and MySQL >= 8.0.3
+>  As stated in Getting Started parts of our notion, don't forget to make sure that you have Node.js >= 16.14.2 and PostgreSQL 
 
 ## How to use
 
