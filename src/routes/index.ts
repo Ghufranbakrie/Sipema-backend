@@ -6,6 +6,7 @@ import RoutesRegistry from './registry';
 import * as AuthMiddleware from '$middlewares/authMiddleware';
 import * as ExampleBufferController from "$controllers/rest/ExampleBufferController"
 import unitRoutes from "./unit";
+import pelaporanRoutes from "./Pengaduan"
 
 
 const router = new Hono();
@@ -17,6 +18,7 @@ router.put("/update-password", AuthMiddleware.checkJwt, AuthController.changePas
 router.get("/example/buffer/pdf", ExampleBufferController.getPDF)
 router.route("/users", RoutesRegistry.UserRoutes)
 router.route("/units", unitRoutes)
+router.route("/pelaporan", pelaporanRoutes)
 
 router.get("/", (c: Context) => {
   return response_success(c, "main routes!");
