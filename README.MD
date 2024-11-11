@@ -4,7 +4,7 @@
 
 - Language : TypeScript
 - ORM : Prisma
-- Database : MySQL
+- Database : PostgreSQL
 - HTTP Framework : Express
 - Logging : Winston + Morgan
 
