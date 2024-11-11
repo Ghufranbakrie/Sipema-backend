@@ -1,0 +1,68 @@
+// schema.prisma
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Used for migrations
+}
+
+enum Roles {
+  USER
+  ADMIN
+  PETUGAS_SUPER
+  PETUGAS
+}
+
+enum Status {
+  PENDING
+  PROCESS
+  REJECTED
+  COMPLETED
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String
+  no_identitas  String      @unique
+  name          String
+  password      String
+  program_studi String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  role          Roles
+  // Relasi untuk pelapor
+  pengaduan     Pengaduan[] @relation("pelapor")
+  // Relasi untuk petugas unit
+  unit_petugas  Unit?       @relation("petugas")
+}
+
+model Unit {
+  id        String      @id @default(cuid())
+  nama_unit String      @unique
+  // Relasi ke pengaduan yang masuk ke unit
+  pengaduan Pengaduan[]
+  // Relasi ke petugas yang menangani unit (1 unit - 1 petugas)
+  petugas   User?       @relation("petugas", fields: [petugasId], references: [id])
+  petugasId String?     @unique
+}
+
+model Pengaduan {
+  id        String   @id @default(cuid())
+  judul     String
+  deskripsi String
+  status    Status   @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Field untuk response petugas
+  response  String?
+
+  pelapor   User   @relation("pelapor", fields: [pelaporId], references: [id])
+  pelaporId String
+
+  unit   Unit   @relation(fields: [unitId], references: [id])
+  unitId String
+}
