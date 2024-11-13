@@ -13,8 +13,8 @@ export interface Unit {
 
 // DTO for creating new Unit
 export interface UnitCreateDTO {
-    nama_unit: string
-    petugasId?: string
+    nama_unit: string;
+    petugasId?: string | null;
 }
 
 // DTO for updating Unit

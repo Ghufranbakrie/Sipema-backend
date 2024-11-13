@@ -3,39 +3,44 @@ import { INTERNAL_SERVER_ERROR_SERVICE_RESPONSE, INVALID_ID_SERVICE_RESPONSE, Se
 import Logger from '$pkg/logger';
 import { prisma } from '$utils/prisma.utils';
 import { Unit } from '@prisma/client';
-import { UnitDTO } from '$entities/Unit';
+import { UnitCreateDTO, UnitUpdateDTO, UnitDTO } from '$entities/Unit';
 import { buildFilterQueryLimitOffsetV2 } from './helpers/FilterQueryV2';
 
 export type CreateResponse = Unit | {}
-export async function create(data: UnitDTO): Promise<ServiceResponse<CreateResponse>> {
+export async function create(data: UnitCreateDTO): Promise<ServiceResponse<CreateResponse>> {
     try {
-
         const unitExist = await prisma.unit.findUnique({
-            where: {
-                nama_unit: data.nama_unit
-            }
+            where: { nama_unit: data.nama_unit }
         });
 
         if (unitExist) {
             return ConflictResponse("Unit with this name already exists");
         }
 
-        const transformedData = {
-            ...data,
-            petugas: data.petugas ? { connect: { no_identitas: data.petugas.no_identitas } } : undefined
-        };
-
-        const Unit = await prisma.unit.create({
-            data: transformedData
-        })
+        const unit = await prisma.unit.create({
+            data: {
+                nama_unit: data.nama_unit,
+                petugasId: data.petugasId
+            },
+            include: {
+                petugas: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        no_identitas: true
+                    }
+                }
+            }
+        });
 
         return {
             status: true,
-            data: Unit
-        }
+            data: unit
+        };
     } catch (err) {
-        Logger.error(`unitService.create : ${err}`)
-        return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE
+        Logger.error(`unitService.create : ${err}`);
+        return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE;
     }
 }
 
@@ -101,11 +106,10 @@ export async function getById(nama_unit: string): Promise<ServiceResponse<GetByI
     }
 }
 
-export type UpdateResponse = Unit | {}
-export async function update(nama_unit: string, data: UnitDTO): Promise<ServiceResponse<UpdateResponse>> {
+export type UpdateResponse = UnitDTO | {}
+export async function update(nama_unit: string, data: UnitUpdateDTO): Promise<ServiceResponse<UpdateResponse>> {
     try {
-        // Check if unit exists
-        let unit = await prisma.unit.findUnique({
+        const unit = await prisma.unit.findUnique({
             where: { nama_unit }
         });
 
@@ -113,43 +117,26 @@ export async function update(nama_unit: string, data: UnitDTO): Promise<ServiceR
             return BadRequestWithMessage("Unit not found");
         }
 
-        // Prepare update data
-        const updateData: any = {
-            nama_unit: data.nama_unit
-        };
-        let unitExist = await prisma.unit.findUnique({
-            where: { nama_unit: data.nama_unit }
-        })
-
-        if (unitExist) return ConflictResponse("Unit has ready used")
-
-        // Only check and connect petugas if provided
-        if (data.petugas?.no_identitas) {
-            const user = await prisma.user.findUnique({
-                where: {
-                    no_identitas: data.petugas.no_identitas
-                }
+        if (data.nama_unit && data.nama_unit !== nama_unit) {
+            const unitExist = await prisma.unit.findUnique({
+                where: { nama_unit: data.nama_unit }
             });
-
-            if (!user) {
-                return BadRequestWithMessage("Petugas not found");
-            }
-            updateData.petugas = {
-                connect: {
-                    no_identitas: data.petugas.no_identitas
-                }
-            };
+            if (unitExist) return ConflictResponse("Unit name already exists");
         }
 
-        // Update unit
         const updatedUnit = await prisma.unit.update({
             where: { nama_unit },
-            data: updateData,
+            data: {
+                nama_unit: data.nama_unit,
+                petugasId: data.petugasId
+            },
             include: {
                 petugas: {
                     select: {
-                        no_identitas: true,
-                        name: true
+                        id: true,
+                        name: true,
+                        email: true,
+                        no_identitas: true
                     }
                 }
             }
@@ -159,13 +146,11 @@ export async function update(nama_unit: string, data: UnitDTO): Promise<ServiceR
             status: true,
             data: updatedUnit
         };
-
     } catch (err) {
         Logger.error(`UnitService.update : ${err}`);
         return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE;
     }
 }
-
 
 export async function deleteByIds(ids: string): Promise<ServiceResponse<{}>> {
     try {

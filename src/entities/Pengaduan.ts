@@ -8,12 +8,12 @@ export interface Pengaduan {
     judul: string
     deskripsi: string
     status: Status
-    response?: string | null
+    response: string | null
     createdAt: Date
     updatedAt: Date
     pelaporId: string
     pelapor?: User
-    unitId: string
+    nameUnit: string  // Changed from namaUnit to match schema
     unit?: Unit
 }
 
@@ -21,7 +21,7 @@ export interface Pengaduan {
 export interface PengaduanCreateDTO {
     judul: string
     deskripsi: string
-    unitId: string
+    nameUnit: string  // Changed from unitId to match schema
     pelaporId: string
 }
 
@@ -30,8 +30,8 @@ export interface PengaduanUpdateDTO {
     judul?: string
     deskripsi?: string
     status?: Status
-    response?: string
-    unitId?: string
+    response?: string | null
+    nameUnit?: string  // Changed from namaUnit to match schema
 }
 
 // DTO for response from service
@@ -40,7 +40,7 @@ export interface PengaduanDTO {
     judul: string
     deskripsi: string
     status: Status
-    response?: string
+    response: string | null
     createdAt: Date
     updatedAt: Date
     pelapor: {
@@ -51,5 +51,6 @@ export interface PengaduanDTO {
     unit: {
         id: string
         nama_unit: string
+        petugasId: string | null
     }
 }

@@ -1,14 +1,16 @@
 import { Context, TypedResponse } from "hono"
 import * as unitService from "$services/UnitService"
 import { handleServiceErrorWithResponse, response_created, response_success } from "$utils/response.utils"
-import { UnitDTO } from "$entities/Unit"
+import { validateCreateUnit } from "$validations/ unitValidator"
+import { UnitDTO, UnitCreateDTO } from "$entities/Unit"
 import { FilteringQueryV2 } from "$entities/Query"
 import { checkFilteringQueryV2 } from "$controllers/helpers/CheckFilteringQuery"
 
 export async function create(c: Context): Promise<TypedResponse> {
-    const data: UnitDTO = await c.req.json();
+    const data: UnitCreateDTO = await c.req.json();
+    const validatedData = validateCreateUnit(data);
 
-    const serviceResponse = await unitService.create(data);
+    const serviceResponse = await unitService.create(validatedData);
 
     if (!serviceResponse.status) {
         return handleServiceErrorWithResponse(c, serviceResponse)

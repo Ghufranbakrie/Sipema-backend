@@ -46,7 +46,7 @@ model Unit {
   // Relasi ke pengaduan yang masuk ke unit
   pengaduan Pengaduan[]
   // Relasi ke petugas yang menangani unit (1 unit - 1 petugas)
-  petugas   User?       @relation("petugas", fields: [petugasId], references: [id])
+  petugas   User?       @relation("petugas", fields: [petugasId], references: [no_identitas])
   petugasId String?     @unique
 }
 
@@ -60,9 +60,9 @@ model Pengaduan {
   // Field untuk response petugas
   response  String?
 
-  pelapor   User   @relation("pelapor", fields: [pelaporId], references: [id])
+  pelapor   User   @relation("pelapor", fields: [pelaporId], references: [no_identitas])
   pelaporId String
 
-  unit   Unit   @relation(fields: [unitId], references: [id])
-  unitId String
+  unit     Unit   @relation(fields: [nameUnit], references: [nama_unit])
+  nameUnit String
 }

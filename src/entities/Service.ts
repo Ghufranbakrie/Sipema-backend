@@ -7,6 +7,7 @@ export interface ServiceResponse<T> {
 interface ServiceError {
   message: string;
   code: number;
+  details?: { field: string; message: string }[];
 }
 
 export const INTERNAL_SERVER_ERROR_SERVICE_RESPONSE: ServiceResponse<{}> = {

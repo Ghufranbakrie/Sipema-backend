@@ -1,33 +1,62 @@
 import { FilteringQueryV2, PagedList } from '$entities/Query';
-import { INTERNAL_SERVER_ERROR_SERVICE_RESPONSE, INVALID_ID_SERVICE_RESPONSE, ServiceResponse } from '$entities/Service';
-import Logger from '$pkg/logger';
+import {
+    INTERNAL_SERVER_ERROR_SERVICE_RESPONSE,
+    INVALID_ID_SERVICE_RESPONSE,
+    ServiceResponse,
+} from '$entities/Service';
 import { prisma } from '$utils/prisma.utils';
 import { Pengaduan } from '@prisma/client';
-import { PengaduanDTO } from '$entities/Pengaduan';
+import { PengaduanDTO, PengaduanCreateDTO } from '$entities/Pengaduan';
+import { validateCreatePengaduan } from '$validations/PengaduanValidator';
+import { ErrorHandler } from '$utils/errorHandler';
+import Logger from '$pkg/logger';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { buildFilterQueryLimitOffsetV2 } from './helpers/FilterQueryV2';
 
 export type CreateResponse = Pengaduan | {}
-export async function create(data: PengaduanDTO): Promise<ServiceResponse<CreateResponse>> {
+export async function create(data: PengaduanCreateDTO): Promise<ServiceResponse<CreateResponse>> {
     try {
-        const Pengaduan = await prisma.pengaduan.create({
-            data: {
-                ...data,
+        // Validate input data
+        const validatedData = await validateCreatePengaduan(data);
+
+        // Create pengaduan
+        const pengaduan = await prisma.pengaduan.create({
+            data: validatedData,
+            include: {
                 pelapor: {
-                    connect: { id: data.pelapor.no_identitas }
+                    select: {
+                        name: true,
+                        no_identitas: true
+                    }
                 },
                 unit: {
-                    connect: { id: data.unit.nama_unit }
+                    select: {
+                        nama_unit: true
+                    }
                 }
             }
-        })
+        });
 
         return {
             status: true,
-            data: Pengaduan
+            data: pengaduan
+        };
+
+    } catch (error) {
+        // If error is a ServiceResponse (from validator), return it directly
+        if (typeof error === 'object' && error !== null && 'status' in error && !error.status) {
+            return error as ServiceResponse<CreateResponse>;
         }
-    } catch (err) {
-        Logger.error(`PengaduanService.create : ${err}`)
-        return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE
+
+        // Handle Prisma errors
+        if (error instanceof PrismaClientKnownRequestError) {
+            Logger.error(`Database Error: ${error.code} - ${error.message}`);
+            return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE;
+        }
+
+        // Handle other errors
+        Logger.error(`Service Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+        return ErrorHandler.handleServiceError(error);
     }
 }
 
