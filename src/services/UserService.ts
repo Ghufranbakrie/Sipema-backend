@@ -38,10 +38,26 @@ export async function getAll(filters: FilteringQueryV2): Promise<ServiceResponse
         const usedFilters = buildFilterQueryLimitOffsetV2(filters)
 
         const [user, totalData] = await Promise.all([
-            prisma.user.findMany(usedFilters),
+            prisma.user.findMany({
+                ...usedFilters,
+                include: {
+                    unit_petugas: {
+                        select: {
+                            nama_unit: true,
+                        }
+                    },
+                    pengaduan: {
+                        select: {
+                            id: true,
+                            judul: true,
+                        }
+                    }
+                }
+            }),
             prisma.user.count({
                 where: usedFilters.where
-            })
+            }),
+
         ])
 
         let totalPage = 1

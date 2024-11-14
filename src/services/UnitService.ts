@@ -9,6 +9,7 @@ import { buildFilterQueryLimitOffsetV2 } from './helpers/FilterQueryV2';
 export type CreateResponse = Unit | {}
 export async function create(data: UnitCreateDTO): Promise<ServiceResponse<CreateResponse>> {
     try {
+        // Check if unit name exists
         const unitExist = await prisma.unit.findUnique({
             where: { nama_unit: data.nama_unit }
         });
@@ -17,21 +18,19 @@ export async function create(data: UnitCreateDTO): Promise<ServiceResponse<Creat
             return ConflictResponse("Unit with this name already exists");
         }
 
-        const unit = await prisma.unit.create({
-            data: {
-                nama_unit: data.nama_unit,
-                petugasId: data.petugasId
-            },
-            include: {
-                petugas: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        no_identitas: true
-                    }
-                }
+        // Validate petugas exists
+        if (data.petugasId) {
+            const petugasExists = await prisma.user.findUnique({
+                where: { no_identitas: data.petugasId }
+            });
+
+            if (!petugasExists) {
+                return BadRequestWithMessage("Referenced Petugas not found");
             }
+        }
+
+        const unit = await prisma.unit.create({
+            data,
         });
 
         return {
@@ -57,6 +56,12 @@ export async function getAll(filters: FilteringQueryV2): Promise<ServiceResponse
                         select: {
                             no_identitas: true,
                             name: true
+                        }
+                    },
+                    pengaduan: {
+                        select: {
+                            id: true,
+                            judul: true,
                         }
                     }
                 }
@@ -126,20 +131,7 @@ export async function update(nama_unit: string, data: UnitUpdateDTO): Promise<Se
 
         const updatedUnit = await prisma.unit.update({
             where: { nama_unit },
-            data: {
-                nama_unit: data.nama_unit,
-                petugasId: data.petugasId
-            },
-            include: {
-                petugas: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        no_identitas: true
-                    }
-                }
-            }
+            data
         });
 
         return {
@@ -166,7 +158,7 @@ export async function deleteByIds(ids: string): Promise<ServiceResponse<{}>> {
 
         return {
             status: true,
-            data: {}
+            data: true
         }
     } catch (err) {
         Logger.error(`unitService.deleteByIds : ${err}`)

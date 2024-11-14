@@ -20,7 +20,10 @@ const createPengaduanSchema = z.object({
         .min(1, "Unit tujuan harus dipilih"),
     pelaporId: z
         .string()
-        .min(1, "ID Pelapor tidak valid")
+        .min(1, "ID Pelapor tidak valid"),
+    kategoriId: z
+        .string()
+        .min(1, "ID Kategori tidak valid")
 });
 
 export type CreatePengaduanRequest = z.infer<typeof createPengaduanSchema>;
@@ -34,6 +37,7 @@ export async function validateCreatePengaduan(data: unknown) {
         where: {
             AND: [
                 { pelaporId: validatedData.pelaporId },
+                { kategoriId: validatedData.kategoriId },
                 {
                     OR: [
                         // Check similar title
@@ -77,25 +81,25 @@ export async function validateCreatePengaduan(data: unknown) {
     }
 
     // Step 3: Check complaint frequency
-    // const recentComplaints = await prisma.pengaduan.count({
-    //     where: {
-    //         AND: [
-    //             { pelaporId: validatedData.pelaporId },
-    //             {
-    //                 createdAt: {
-    //                     gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
-    //                 }
-    //             }
-    //         ]
-    //     }
-    // });
+    const recentComplaints = await prisma.pengaduan.count({
+        where: {
+            AND: [
+                { pelaporId: validatedData.pelaporId },
+                {
+                    createdAt: {
+                        gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+                    }
+                }
+            ]
+        }
+    });
 
-    // if (recentComplaints >= 3) {
-    //     throw ConflictResponse(
-    //         "Anda telah mencapai batas maksimum pengaduan dalam 24 jam. " +
-    //         "Silakan coba lagi besok."
-    //     );
-    // }
+    if (recentComplaints >= 3) {
+        throw ConflictResponse(
+            "Anda telah mencapai batas maksimum pengaduan dalam 24 jam. " +
+            "Silakan coba lagi besok."
+        );
+    }
 
     return validatedData;
 }

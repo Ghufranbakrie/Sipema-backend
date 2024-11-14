@@ -28,8 +28,6 @@ export const INVALID_ID_SERVICE_RESPONSE: ServiceResponse<{}> = {
   }
 }
 
-
-
 // 409 Conflict Response
 export function ConflictResponse(message: string = "Data already exists"): ServiceResponse<{}> {
   return {

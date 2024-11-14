@@ -4,9 +4,7 @@ import * as AuthController from "$controllers/rest/AuthController"
 import * as AuthValidation from "$validations/AuthValidations"
 import RoutesRegistry from './registry';
 import * as AuthMiddleware from '$middlewares/authMiddleware';
-import * as ExampleBufferController from "$controllers/rest/ExampleBufferController"
-import unitRoutes from "./unit";
-import pelaporanRoutes from "./Pengaduan"
+import * as ExampleBufferController from "$controllers/rest/ExampleBufferController";
 
 
 const router = new Hono();
@@ -17,8 +15,10 @@ router.post("/verify-token", AuthController.verifyToken);
 router.put("/update-password", AuthMiddleware.checkJwt, AuthController.changePassword);
 router.get("/example/buffer/pdf", ExampleBufferController.getPDF)
 router.route("/users", RoutesRegistry.UserRoutes)
-router.route("/units", unitRoutes)
-router.route("/pelaporan", pelaporanRoutes)
+router.route("/units", RoutesRegistry.unitRoutes)
+router.route("/pelaporan", RoutesRegistry.PengaduanRoutes)
+router.route("/kategori", RoutesRegistry.KategoriRoutes,)
+
 
 router.get("/", (c: Context) => {
   return response_success(c, "main routes!");

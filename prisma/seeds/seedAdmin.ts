@@ -9,6 +9,7 @@ export async function seedAdmin(prisma: PrismaClient) {
     const countPetugasSuper = await prisma.user.count({ where: { role: Roles.PETUGAS_SUPER } });
     const countPetugas = await prisma.user.count({ where: { role: Roles.PETUGAS } });
 
+
     // Admin seed
     if (countAdmin === 0) {
         const hashedPassword = await bcrypt.hash("admin123", 12);

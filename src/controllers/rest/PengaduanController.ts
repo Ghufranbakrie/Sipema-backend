@@ -1,7 +1,7 @@
 import { Context, TypedResponse } from "hono"
 import * as PengaduanService from "$services/PengaduanService"
 import { handleServiceErrorWithResponse, response_created, response_success } from "$utils/response.utils"
-import { PengaduanDTO, PengaduanCreateDTO } from "$entities/Pengaduan"
+import { Pengaduan, PengaduanCreateDTO } from "$entities/Pengaduan"
 import { FilteringQueryV2 } from "$entities/Query"
 import { checkFilteringQueryV2 } from "$controllers/helpers/CheckFilteringQuery"
 
@@ -42,7 +42,7 @@ export async function getById(c: Context): Promise<TypedResponse> {
 }
 
 export async function update(c: Context): Promise<TypedResponse> {
-    const data: PengaduanDTO = await c.req.json()
+    const data: Pengaduan = await c.req.json()
     const id = c.req.param('id')
 
     const serviceResponse = await PengaduanService.update(id, data)

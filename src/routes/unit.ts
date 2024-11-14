@@ -1,30 +1,32 @@
 
 import { Hono } from "hono"
 import * as unitController from "$controllers/rest/UnitController"
+import * as AuthMiddleware from "$middlewares/authMiddleware";
+import * as unitValidation from "$validations/UnitValidation";
 
 const unitRoutes = new Hono();
 
 
 unitRoutes.get("/",
-    unitController.getAll
+    AuthMiddleware.checkJwt, unitController.getAll
 )
 
 
 unitRoutes.get("/:id",
-    unitController.getById
+    AuthMiddleware.checkJwt, unitController.getById
 )
 
 
 unitRoutes.post("/",
-    unitController.create
+    AuthMiddleware.checkJwt, unitValidation.validateUnitCreateDTO, unitController.create
 )
 
 unitRoutes.put("/:id",
-    unitController.update
+    AuthMiddleware.checkJwt, unitValidation.validateUnitUpdateDTO, unitController.update
 )
 
 unitRoutes.delete("/",
-    unitController.deleteByIds
+    AuthMiddleware.checkJwt, unitController.deleteByIds
 )
 
 export default unitRoutes

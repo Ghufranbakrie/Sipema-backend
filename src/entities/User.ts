@@ -1,4 +1,4 @@
-import { Roles } from "@prisma/client"
+import { Roles, Unit } from "@prisma/client"
 
 export interface UserJWTDAO {
   id: string;
@@ -25,6 +25,7 @@ export interface UserDTO {
   no_identitas: string
   name: string
   email: string
+  unit: Unit
 }
 
 
