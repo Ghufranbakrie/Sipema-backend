@@ -17,7 +17,8 @@ router.get("/example/buffer/pdf", ExampleBufferController.getPDF)
 router.route("/users", RoutesRegistry.UserRoutes)
 router.route("/units", RoutesRegistry.unitRoutes)
 router.route("/pelaporan", RoutesRegistry.PengaduanRoutes)
-router.route("/kategori", RoutesRegistry.KategoriRoutes,)
+router.route("/kategori", RoutesRegistry.KategoriRoutes)
+router.route("/pengaduan", RoutesRegistry.PengaduanMasyarakatRoutes)
 
 
 router.get("/", (c: Context) => {

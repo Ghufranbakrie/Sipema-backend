@@ -22,7 +22,7 @@ unitRoutes.post("/",
 )
 
 unitRoutes.put("/:id",
-    AuthMiddleware.checkJwt, unitValidation.validateUnitUpdateDTO, unitController.update
+    AuthMiddleware.checkJwt, unitController.update
 )
 
 unitRoutes.delete("/",

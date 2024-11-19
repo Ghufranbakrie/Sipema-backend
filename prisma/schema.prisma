@@ -41,20 +41,37 @@ model User {
 }
 
 model Unit {
-  id        String      @id @default(cuid())
-  nama_unit String      @unique
-  pengaduan Pengaduan[]
-  petugas   User?       @relation("petugas", fields: [petugasId], references: [no_identitas])
-  petugasId String?     @unique
+  id                  String                @id @default(cuid())
+  nama_unit           String                @unique
+  pengaduan           Pengaduan[]
+  petugas             User?                 @relation("petugas", fields: [petugasId], references: [no_identitas])
+  petugasId           String?               @unique
+  PengaduanMasyarakat PengaduanMasyarakat[]
 }
 
 model Kategori {
-  id          String      @id @default(cuid())
+  id                  String                @id @default(cuid())
+  nama                String
+  pengaduan           Pengaduan[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  PengaduanMasyarakat PengaduanMasyarakat[]
+}
+
+model PengaduanMasyarakat {
+  id          String   @id @default(cuid())
+  judul       String
+  deskripsi   String
+  status      Status   @default(PENDING)
+  unit        Unit     @relation(fields: [nameUnit], references: [nama_unit])
+  nameUnit    String
+  response    String?
+  kategori    Kategori @relation(fields: [kategoriId], references: [id])
+  kategoriId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   nama        String
-  pengaduanId String?
-  pengaduan   Pengaduan[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  no_telphone String   @unique
 }
 
 model Pengaduan {
@@ -69,6 +86,6 @@ model Pengaduan {
   kategori   Kategori @relation(fields: [kategoriId], references: [id])
   pelapor    User     @relation("pelapor", fields: [pelaporId], references: [no_identitas])
   pelaporId  String
-  unit     Unit   @relation(fields: [nameUnit], references: [nama_unit])
-  nameUnit String
+  unit       Unit     @relation(fields: [nameUnit], references: [nama_unit])
+  nameUnit   String
 }
