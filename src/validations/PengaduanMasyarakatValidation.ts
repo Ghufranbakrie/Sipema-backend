@@ -30,7 +30,39 @@ export async function validatePengaduanMasyarakatDTO(c: Context, next: Next) {
         if (!unit) invalidFields.push(generateErrorStructure("nameUnit", " is not valid. Unit not found in database"))
     }
     if (!data.no_telphone) invalidFields.push(generateErrorStructure("no_telphone", " cannot be empty"))
+    if (data.no_telphone) {
+        const no_telphone = await prisma.pengaduanMasyarakat.findUnique({
+            where: {
+                no_telphone: data.no_telphone
+            }
+        })
+        if (no_telphone) invalidFields.push(generateErrorStructure("no_telphone", " is already exist"))
+    }
 
+
+    if (invalidFields.length !== 0) return response_bad_request(c, "Validation Error", invalidFields)
+    await next()
+}
+
+export async function updateValidateDTO(c: Context, next: Next) {
+    const data: PengaduanMasyarakatDTO = await c.req.json()
+    const invalidFields: ErrorStructure[] = [];
+    if (data.kategoriId) {
+        const kategori = await prisma.kategori.findUnique({
+            where: {
+                id: data.kategoriId
+            }
+        })
+        if (!kategori) invalidFields.push(generateErrorStructure("kategoriId", " is not valid. Category not found in database"))
+    }
+    if (data.nameUnit) {
+        const unit = await prisma.unit.findUnique({
+            where: {
+                nama_unit: data.nameUnit
+            }
+        })
+        if (!unit) invalidFields.push(generateErrorStructure("nameUnit", " is not valid. Unit not found in database"))
+    }
 
     if (invalidFields.length !== 0) return response_bad_request(c, "Validation Error", invalidFields)
     await next()
