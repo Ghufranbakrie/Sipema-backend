@@ -71,7 +71,7 @@ model PengaduanMasyarakat {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   nama        String
-  no_telphone String   @unique
+  no_telphone String
 }
 
 model Pengaduan {

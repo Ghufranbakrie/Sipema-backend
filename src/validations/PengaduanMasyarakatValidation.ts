@@ -30,14 +30,30 @@ export async function validatePengaduanMasyarakatDTO(c: Context, next: Next) {
         if (!unit) invalidFields.push(generateErrorStructure("nameUnit", " is not valid. Unit not found in database"))
     }
     if (!data.no_telphone) invalidFields.push(generateErrorStructure("no_telphone", " cannot be empty"))
-    if (data.no_telphone) {
-        const no_telphone = await prisma.pengaduanMasyarakat.findUnique({
+    // Check for exact duplicate reports
+    if (data.judul && data.deskripsi && data.nameUnit && data.kategoriId) {
+        const existingReport = await prisma.pengaduanMasyarakat.findFirst({
             where: {
-                no_telphone: data.no_telphone
+                AND: [
+                    { judul: data.judul },
+                    { deskripsi: data.deskripsi },
+                    { nameUnit: data.nameUnit },
+                    { kategoriId: data.kategoriId },
+                    { nama: data.nama },
+                    { no_telphone: data.no_telphone }
+                ]
             }
-        })
-        if (no_telphone) invalidFields.push(generateErrorStructure("no_telphone", " is already exist"))
+        });
+
+        if (existingReport) {
+            invalidFields.push(generateErrorStructure(
+                "report",
+                "Identical report already exists. Please submit a different report or check the status of your existing report."
+            ));
+        }
     }
+
+
 
 
     if (invalidFields.length !== 0) return response_bad_request(c, "Validation Error", invalidFields)
