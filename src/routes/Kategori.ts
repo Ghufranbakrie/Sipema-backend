@@ -8,12 +8,12 @@ const KategoriRoutes = new Hono();
 
 
 KategoriRoutes.get("/",
-    AuthMiddleware.checkJwt, KategoriController.getAll
+    KategoriController.getAll
 )
 
 
 KategoriRoutes.get("/:id",
-    AuthMiddleware.checkJwt, KategoriController.getById
+    KategoriController.getById
 )
 
 
