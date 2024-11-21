@@ -1,6 +1,6 @@
 import { UserLoginDTO, UserRegisterDTO } from '$entities/User';
 import { Context, Next } from "hono"
-import { response_bad_request } from '../utils/response.utils';
+import { response_bad_request, response_not_found } from '../utils/response.utils';
 import { prisma } from '../utils/prisma.utils';
 
 function validateEmailFormat(email: string): boolean {
@@ -41,7 +41,6 @@ export async function validateLoginDTO(c: Context, next: Next) {
     if (!data.no_identitas) {
         invalidFields.push("NPM or NIP is required")
     }
-    // Remove email validation for no_identitas
     if (!data.password) {
         invalidFields.push("password is required")
     }
@@ -49,6 +48,20 @@ export async function validateLoginDTO(c: Context, next: Next) {
     if (invalidFields.length > 0) {
         return response_bad_request(c, "Bad Request", invalidFields);
     }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+        where: {
+            no_identitas: data.no_identitas
+        }
+    });
+
+    if (!user) {
+        return response_not_found(c, "User not found");
+    }
+
+    // Store user in context for next middleware
+    c.set('loginUser', user);
 
     await next();
 }

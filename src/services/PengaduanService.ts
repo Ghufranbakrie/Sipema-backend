@@ -1,23 +1,19 @@
 import { FilteringQueryV2, PagedList } from '$entities/Query';
-import { BadRequestWithMessage, INTERNAL_SERVER_ERROR_SERVICE_RESPONSE, INVALID_ID_SERVICE_RESPONSE, ServiceResponse } from '$entities/Service';
+import { INTERNAL_SERVER_ERROR_SERVICE_RESPONSE, INVALID_ID_SERVICE_RESPONSE, ServiceResponse } from '$entities/Service';
 import { prisma } from '$utils/prisma.utils';
 import { Pengaduan } from '@prisma/client';
-import { PengaduanCreateDTO, PengaduanUpdateDTO } from '$entities/Pengaduan';
-import { validateCreatePengaduan } from '$validations/PengaduanValidator';
+import { PengaduanDTO } from '$entities/Pengaduan';
 import { ErrorHandler } from '$utils/errorHandler';
 import Logger from '$pkg/logger';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { buildFilterQueryLimitOffsetV2 } from './helpers/FilterQueryV2';
 
 export type CreateResponse = Pengaduan | {}
-export async function create(data: PengaduanCreateDTO): Promise<ServiceResponse<CreateResponse>> {
+export async function create(data: PengaduanDTO): Promise<ServiceResponse<CreateResponse>> {
     try {
-        // Validate input data
-        const validatedData = await validateCreatePengaduan(data);
-
         // Create pengaduan
         const pengaduan = await prisma.pengaduan.create({
-            data: validatedData
+            data
         });
 
         return {
@@ -122,7 +118,7 @@ export async function getById(id: string): Promise<ServiceResponse<GetByIdRespon
 }
 
 export type UpdateResponse = Pengaduan | {}
-export async function update(id: string, data: PengaduanUpdateDTO): Promise<ServiceResponse<UpdateResponse>> {
+export async function update(id: string, data: PengaduanDTO): Promise<ServiceResponse<UpdateResponse>> {
     try {
         let Pengaduan = await prisma.pengaduan.findUnique({
             where: {
@@ -150,41 +146,24 @@ export async function update(id: string, data: PengaduanUpdateDTO): Promise<Serv
 }
 
 export async function deleteByIds(ids: string): Promise<ServiceResponse<{}>> {
+
     try {
         const idArray: string[] = JSON.parse(ids)
 
-        // Check if all records exist first
-        const existingRecords = await prisma.pengaduan.findMany({
-            where: {
-                id: {
-                    in: idArray
+        idArray.forEach(async (id) => {
+            await prisma.pengaduan.delete({
+                where: {
+                    id
                 }
-            },
-            select: {
-                id: true
-            }
-        });
-
-        if (existingRecords.length !== idArray.length) {
-            return BadRequestWithMessage('Some records do not exist');
-        }
-
-
-        // Delete records concurrently
-        await Promise.all(
-            idArray.map(id =>
-                prisma.pengaduan.delete({
-                    where: { id }
-                })
-            )
-        );
+            })
+        })
 
         return {
             status: true,
             data: {}
         }
     } catch (err) {
-        Logger.error(`PengaduanService.deleteByIds : ${err}`)
+        Logger.error(`KategoriService.deleteByIds : ${err}`)
         return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE
     }
 }

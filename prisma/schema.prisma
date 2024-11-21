@@ -78,14 +78,14 @@ model Pengaduan {
   id         String   @id @default(cuid())
   judul      String
   deskripsi  String
+  response   String?
+  kategoriId String
+  nameUnit   String
+  pelaporId  String
   status     Status   @default(PENDING)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  response   String?
-  kategoriId String
   kategori   Kategori @relation(fields: [kategoriId], references: [id])
   pelapor    User     @relation("pelapor", fields: [pelaporId], references: [no_identitas])
-  pelaporId  String
   unit       Unit     @relation(fields: [nameUnit], references: [nama_unit])
-  nameUnit   String
 }
