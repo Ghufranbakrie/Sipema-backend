@@ -8,12 +8,12 @@ const unitRoutes = new Hono();
 
 
 unitRoutes.get("/",
-    AuthMiddleware.checkJwt, unitController.getAll
+    unitController.getAll
 )
 
 
 unitRoutes.get("/:id",
-    AuthMiddleware.checkJwt, unitController.getById
+    unitController.getById
 )
 
 
