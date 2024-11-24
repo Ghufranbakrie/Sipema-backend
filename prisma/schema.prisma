@@ -59,19 +59,20 @@ model Kategori {
 }
 
 model PengaduanMasyarakat {
-  id          String   @id @default(cuid())
-  judul       String
-  deskripsi   String
-  status      Status   @default(PENDING)
-  unit        Unit     @relation(fields: [nameUnit], references: [nama_unit])
-  nameUnit    String
-  response    String?
-  kategori    Kategori @relation(fields: [kategoriId], references: [id])
-  kategoriId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  nama        String
-  no_telphone String
+  id            String   @id @default(cuid())
+  judul         String
+  deskripsi     String
+  status        Status   @default(PENDING)
+  unit          Unit     @relation(fields: [nameUnit], references: [nama_unit])
+  nameUnit      String
+  response      String?
+  kategori      Kategori @relation(fields: [kategoriId], references: [id])
+  kategoriId    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  nama          String
+  filePendukung String?
+  no_telphone   String
 }
 
 model Pengaduan {

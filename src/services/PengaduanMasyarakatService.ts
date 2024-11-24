@@ -5,21 +5,79 @@ import { prisma } from '$utils/prisma.utils';
 import { PengaduanMasyarakat } from '@prisma/client';
 import { PengaduanMasyarakatDTO } from '$entities/PengaduanMasyarakat';
 import { buildFilterQueryLimitOffsetV2 } from './helpers/FilterQueryV2';
+import cloudinary from "$utils/cloudinary.utils";
+import { ServiceResult, FileUploadResult } from '$entities/responses';
 
-export type CreateResponse = PengaduanMasyarakat | {}
-export async function create(data: PengaduanMasyarakatDTO): Promise<ServiceResponse<CreateResponse>> {
+const ALLOWED_FORMATS = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+async function uploadFile(file: File): Promise<ServiceResult<FileUploadResult>> {
     try {
-        const pengaduanMasyarakat = await prisma.pengaduanMasyarakat.create({
-            data,
-        })
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+            return {
+                status: false,
+                error: `Invalid file type. Allowed types: ${ALLOWED_FORMATS.join(', ')}`
+            };
+        }
+
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const base64String = `data:${file.type};base64,${buffer.toString('base64')}`;
+
+        const result = await cloudinary.uploader.upload(base64String, {
+            folder: 'pengaduan',
+            public_id: `${Date.now()}`,
+            resource_type: 'auto'
+        });
 
         return {
             status: true,
-            data: pengaduanMasyarakat
+            data: {
+                secure_url: result.secure_url,
+                public_id: result.public_id
+            }
+        };
+    } catch (error) {
+        Logger.error('File upload error:', error);
+        return {
+            status: false,
+            error: 'Failed to upload file'
+        };
+    }
+}
+
+export async function create(
+    data: PengaduanMasyarakatDTO,
+    file: File
+): Promise<ServiceResult<PengaduanMasyarakat>> {
+    try {
+
+        // Upload file
+        const uploadResult = await uploadFile(file);
+        if (!uploadResult.status || !uploadResult.data) {
+            return {
+                status: false,
+                error: uploadResult.error || 'File upload failed'
+            };
         }
-    } catch (err) {
-        Logger.error(`PengaduanMasyarakatService.create : ${err}`)
-        return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE
+
+        // Create pengaduan
+        const pengaduan = await prisma.pengaduanMasyarakat.create({
+            data: {
+                ...data,
+                filePendukung: uploadResult.data.secure_url
+            }
+        });
+
+        return {
+            status: true,
+            data: pengaduan
+        };
+
+    } catch (error) {
+        Logger.error('Create pengaduan error:', error);
+        return {
+            status: false,
+            error: 'Internal server error'
+        };
     }
 }
 
@@ -124,4 +182,6 @@ export async function deleteByIds(ids: string): Promise<ServiceResponse<{}>> {
         return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE
     }
 }
+
+
 

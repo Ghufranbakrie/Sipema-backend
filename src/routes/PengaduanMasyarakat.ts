@@ -9,6 +9,10 @@ const PengaduanMasyarakatRoutes = new Hono();
 PengaduanMasyarakatRoutes.get("/",
     AuthMiddleware.checkJwt, PengaduanMasyarakatController.getAll
 )
+// PengaduanMasyarakatRoutes.post("/file",
+//     AuthMiddleware.checkJwt,
+//     PengaduanMasyarakatController.uploadFile
+// );
 
 
 PengaduanMasyarakatRoutes.get("/:id", AuthMiddleware.checkJwt,
