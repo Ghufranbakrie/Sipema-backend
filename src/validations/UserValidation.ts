@@ -3,6 +3,7 @@ import { response_bad_request } from '$utils/response.utils';
 import { ErrorStructure, generateErrorStructure } from './helper'
 
 import { UserRegisterDTO } from '$entities/User'
+import { prisma } from '$utils/prisma.utils';
 
 export async function validateUserRegisterDTO(c: Context, next: Next) {
     const data: UserRegisterDTO = await c.req.json()
@@ -12,10 +13,39 @@ export async function validateUserRegisterDTO(c: Context, next: Next) {
     if (!data.password) invalidFields.push(generateErrorStructure("password", " cannot be empty"))
     if (!data.no_identitas) invalidFields.push(generateErrorStructure("no_identitas", " cannot be empty"))
     if (!data.role) invalidFields.push(generateErrorStructure("role", " cannot be empty"))
-
-
     if (invalidFields.length !== 0) return response_bad_request(c, "Validation Error", invalidFields)
     await next()
+}
+
+export async function validationDeletedUsers(c: Context, next: Next) {
+    const ids = c.req.query('ids') as string;
+    const invalidFields: ErrorStructure[] = [];
+    if (!ids) {
+        invalidFields.push(generateErrorStructure("ids", " cannot be empty"));
+        return response_bad_request(c, "Validation Error", invalidFields);
+    }
+    const idArray: string[] = JSON.parse(ids);
+    // Check all users exist before proceeding
+    const users = await Promise.all(
+        idArray.map(async (no_identitas) => {
+            const user = await prisma.user.findUnique({
+                where: { no_identitas }
+            });
+            if (!user) {
+                invalidFields.push(generateErrorStructure("id", `User with id: ${no_identitas} not found`));
+            }
+            return user;
+        })
+    );
+
+    if (invalidFields.length !== 0) {
+        return response_bad_request(c, "Validation Error", invalidFields);
+    }
+
+    // Add the validated users to the context for use in the handler
+    c.set('validatedUsers', users.filter(Boolean));
+    await next();
+
 }
 
 

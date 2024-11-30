@@ -18,7 +18,6 @@ export async function create(data: UnitCreateDTO): Promise<ServiceResponse<Creat
             return ConflictResponse("Unit with this name already exists");
         }
 
-        // Validate petugas exists
         if (data.petugasId) {
             const petugasExists = await prisma.user.findUnique({
                 where: { no_identitas: data.petugasId }
@@ -62,6 +61,8 @@ export async function getAll(filters: FilteringQueryV2): Promise<ServiceResponse
                         select: {
                             id: true,
                             judul: true,
+                            deskripsi: true,
+                            status: true,
                         }
                     }
                 }

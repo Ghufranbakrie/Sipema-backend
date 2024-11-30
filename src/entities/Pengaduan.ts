@@ -8,4 +8,6 @@ export interface PengaduanDTO {
     kategoriId: string;
     pelaporId: string;
     nameUnit: string;
+    filePendukung?: string;
+    filePetugas?: string;
 }

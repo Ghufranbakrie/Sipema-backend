@@ -2,6 +2,7 @@ import KategoriRoutes from "./Kategori";
 import PengaduanRoutes from "./Pengaduan";
 import PengaduanMasyarakatRoutes from "./PengaduanMasyarakat";
 import unitRoutes from "./unit";
+import UploadRoutes from "./Upload";
 import UserRoutes from "./User";
 
 const RoutesRegistry = {
@@ -9,7 +10,8 @@ const RoutesRegistry = {
     PengaduanRoutes,
     KategoriRoutes,
     unitRoutes,
-    PengaduanMasyarakatRoutes
+    PengaduanMasyarakatRoutes,
+    UploadRoutes
 
 };
 

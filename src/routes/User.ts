@@ -26,7 +26,7 @@ UserRoutes.put("/:id",
 )
 
 UserRoutes.delete("/",
-    UserValidation.validateUserRegisterDTO, AuthMiddleware.checkJwt, UserController.deleteByIds
+    UserValidation.validationDeletedUsers, AuthMiddleware.checkJwt, UserController.deleteByIds
 )
 
 export default UserRoutes

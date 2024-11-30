@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Roles, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { exclude, UserRegisterDTO, UserLoginDTO, UserJWTDAO } from '$entities/User';
 import { BadRequestWithMessage, INTERNAL_SERVER_ERROR_SERVICE_RESPONSE, ServiceResponse } from '$entities/Service';
 import { prisma } from "$utils/prisma.utils";
@@ -46,7 +46,6 @@ export async function logIn(data: UserLoginDTO): Promise<ServiceResponse<any>> {
 
 export async function register(data: UserRegisterDTO): Promise<ServiceResponse<any>> {
   try {
-    data.role = Roles.USER
     data.password = await bcrypt.hash(data.password, 12)
 
     const newUser = await prisma.user.create({

@@ -142,7 +142,7 @@ export async function deleteByIds(ids: string): Promise<ServiceResponse<{}>> {
 
         return {
             status: true,
-            data: {}
+            data: true
         }
     } catch (err) {
         Logger.error(`UserService.deleteByIds : ${err}`)

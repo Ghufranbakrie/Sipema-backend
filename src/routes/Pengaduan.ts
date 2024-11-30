@@ -4,25 +4,17 @@ import * as PengaduanController from "$controllers/rest/PengaduanController"
 import * as authMiddleware from "$middlewares/authMiddleware"
 import * as pengaudanValidation from "$validations/PengaduanValidation"
 import { Roles } from "@prisma/client";
+import * as filterPengaduanMiddleware from "$middlewares/filterPengaduanMiddleware";
 
 const PengaduanRoutes = new Hono();
 
 
 PengaduanRoutes.get("/",
-    authMiddleware.checkJwt, authMiddleware.checkRole([Roles.PETUGAS_SUPER]), PengaduanController.getAll
+    authMiddleware.checkJwt,
+    authMiddleware.checkRole([Roles.PETUGAS, Roles.USER, Roles.PETUGAS_SUPER]),
+    filterPengaduanMiddleware.filterPengaduanByRole,
+    PengaduanController.getAll
 )
-
-PengaduanRoutes.get("/my-complaints",
-    authMiddleware.checkJwt,
-    authMiddleware.checkRole([Roles.USER]),
-    PengaduanController.getAllByUser
-);
-
-PengaduanRoutes.get("/unit-complaints",
-    authMiddleware.checkJwt,
-    authMiddleware.checkRole([Roles.PETUGAS]),
-    PengaduanController.getAllByUnit
-);
 
 
 

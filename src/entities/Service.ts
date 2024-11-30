@@ -1,7 +1,10 @@
+import { UploadResponse } from "./UploadFile";
+
 export interface ServiceResponse<T> {
   data?: T;
   err?: ServiceError;
   status: boolean;
+  message?: string;
 }
 
 interface ServiceError {
@@ -50,4 +53,15 @@ export function BadRequestWithMessage(message: string): ServiceResponse<{}> {
       code: 404
     }
   }
+}
+
+export function createUploadErrorResponse(message: string): ServiceResponse<UploadResponse> {
+  return {
+    status: false,
+    message: message,
+    data: {
+      secure_url: '',
+      public_id: '',
+    }
+  };
 }

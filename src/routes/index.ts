@@ -19,7 +19,7 @@ router.route("/units", RoutesRegistry.unitRoutes)
 router.route("/pelaporan", RoutesRegistry.PengaduanRoutes)
 router.route("/kategori", RoutesRegistry.KategoriRoutes)
 router.route("/pengaduan", RoutesRegistry.PengaduanMasyarakatRoutes)
-
+router.route("/upload", RoutesRegistry.UploadRoutes)
 
 router.get("/", (c: Context) => {
   return response_success(c, "main routes!");

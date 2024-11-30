@@ -8,6 +8,7 @@ export interface UserJWTDAO {
   role: Roles;
   program_studi?: string;
 }
+
 export interface UserLoginDTO {
   no_identitas: string
   password: string
@@ -21,6 +22,7 @@ export interface UserRegisterDTO {
   program_studi?: string; // field opsional
   role: Roles;
 }
+
 export interface UserDTO {
   no_identitas: string
   name: string
