@@ -3,6 +3,7 @@ import { Hono } from "hono"
 import * as unitController from "$controllers/rest/UnitController"
 import * as AuthMiddleware from "$middlewares/authMiddleware";
 import * as unitValidation from "$validations/UnitValidation";
+import { Roles } from "@prisma/client";
 
 const unitRoutes = new Hono();
 
@@ -18,15 +19,15 @@ unitRoutes.get("/:id",
 
 
 unitRoutes.post("/",
-    AuthMiddleware.checkJwt, unitValidation.validateUnitCreateDTO, unitController.create
+    AuthMiddleware.checkJwt, AuthMiddleware.checkRole([Roles.ADMIN]), unitValidation.validateUnitCreateDTO, unitController.create
 )
 
 unitRoutes.put("/:id",
-    AuthMiddleware.checkJwt, unitController.update
+    unitValidation.validateUnitUpdateDTO, AuthMiddleware.checkJwt, unitController.update
 )
 
 unitRoutes.delete("/",
-    AuthMiddleware.checkJwt, unitController.deleteByIds
+    unitValidation.validationDeletedUnit, AuthMiddleware.checkJwt, unitController.deleteByIds
 )
 
 export default unitRoutes

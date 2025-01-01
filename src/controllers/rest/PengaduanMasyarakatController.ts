@@ -4,6 +4,7 @@ import { handleServiceErrorWithResponse, response_success } from "$utils/respons
 import { FilteringQueryV2 } from "$entities/Query"
 import { checkFilteringQueryV2 } from "$controllers/helpers/CheckFilteringQuery"
 import { PengaduanMasyarakatDTO } from "$entities/PengaduanMasyarakat"
+import { UserJWTDAO } from "$entities/User"
 
 
 // PengaduanMasyarakatController.ts
@@ -23,9 +24,11 @@ export async function create(c: Context): Promise<TypedResponse> {
 
 
 export async function getAll(c: Context): Promise<TypedResponse> {
-    const filters: FilteringQueryV2 = checkFilteringQueryV2(c)
+    const filters: FilteringQueryV2 = c.get("filters") || checkFilteringQueryV2(c);
+    const user: UserJWTDAO = c.get("jwtPayload");
 
-    const serviceResponse = await PengaduanMasyarakatService.getAll(filters)
+
+    const serviceResponse = await PengaduanMasyarakatService.getAll(filters, user)
 
     if (!serviceResponse.status) {
         return handleServiceErrorWithResponse(c, serviceResponse)

@@ -13,6 +13,9 @@ export default function createRestServer() {
     corsOptions.origin = allowedOrigins
   }
   const app = new Hono();
+
+
+
   app.use(cors(corsOptions));
   app.use(logger())
   app.use(prettyJSON({ space: 4 }));

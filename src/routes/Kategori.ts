@@ -26,7 +26,7 @@ KategoriRoutes.put("/:id",
 )
 
 KategoriRoutes.delete("/",
-    AuthMiddleware.checkJwt, KategoriController.deleteByIds
+    KategoriValidation.deleteValidationKatergori, AuthMiddleware.checkJwt, KategoriController.deleteByIds
 )
 
 export default KategoriRoutes

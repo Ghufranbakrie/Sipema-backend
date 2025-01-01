@@ -113,25 +113,18 @@ export async function getById(nama_unit: string): Promise<ServiceResponse<GetByI
 }
 
 export type UpdateResponse = UnitDTO | {}
-export async function update(nama_unit: string, data: UnitUpdateDTO): Promise<ServiceResponse<UpdateResponse>> {
+export async function update(id: string, data: UnitUpdateDTO): Promise<ServiceResponse<UpdateResponse>> {
     try {
         const unit = await prisma.unit.findUnique({
-            where: { nama_unit }
+            where: { id }
         });
 
         if (!unit) {
-            return BadRequestWithMessage("Unit not found");
-        }
-
-        if (data.nama_unit && data.nama_unit !== nama_unit) {
-            const unitExist = await prisma.unit.findUnique({
-                where: { nama_unit: data.nama_unit }
-            });
-            if (unitExist) return ConflictResponse("Unit name already exists");
+            return INVALID_ID_SERVICE_RESPONSE
         }
 
         const updatedUnit = await prisma.unit.update({
-            where: { nama_unit },
+            where: { id },
             data
         });
 

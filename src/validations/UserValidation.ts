@@ -1,6 +1,6 @@
 import { Context, Next } from 'hono';
 import { response_bad_request } from '$utils/response.utils';
-import { ErrorStructure, generateErrorStructure } from './helper'
+import { ErrorStructure, generateErrorStructure, generateErrorStructureParams } from './helper'
 
 import { UserRegisterDTO } from '$entities/User'
 import { prisma } from '$utils/prisma.utils';
@@ -21,18 +21,18 @@ export async function validationDeletedUsers(c: Context, next: Next) {
     const ids = c.req.query('ids') as string;
     const invalidFields: ErrorStructure[] = [];
     if (!ids) {
-        invalidFields.push(generateErrorStructure("ids", " cannot be empty"));
+        invalidFields.push(generateErrorStructureParams("ids", " cannot be empty"));
         return response_bad_request(c, "Validation Error", invalidFields);
     }
     const idArray: string[] = JSON.parse(ids);
     // Check all users exist before proceeding
-    const users = await Promise.all(
+    await Promise.all(
         idArray.map(async (no_identitas) => {
             const user = await prisma.user.findUnique({
                 where: { no_identitas }
             });
             if (!user) {
-                invalidFields.push(generateErrorStructure("id", `User with id: ${no_identitas} not found`));
+                invalidFields.push(generateErrorStructureParams("id", `User with id: ${no_identitas} not found`));
             }
             return user;
         })
@@ -41,11 +41,7 @@ export async function validationDeletedUsers(c: Context, next: Next) {
     if (invalidFields.length !== 0) {
         return response_bad_request(c, "Validation Error", invalidFields);
     }
-
-    // Add the validated users to the context for use in the handler
-    c.set('validatedUsers', users.filter(Boolean));
     await next();
-
 }
 
 

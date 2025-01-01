@@ -47,7 +47,6 @@ export async function validatePengaduanDTO(c: Context, next: Next) {
     if (!data.kategoriId) invalidFields.push(generateErrorStructure("kategoriId", " cannot be empty"))
     if (!data.nameUnit) invalidFields.push(generateErrorStructure("nameUnit", " cannot be empty"))
     if (!data.nameUnit) invalidFields.push(generateErrorStructure("nameUnit", " cannot be empty"))
-    if (!data.pelaporId) invalidFields.push(generateErrorStructure("pelaporId", " cannot be empty"))
 
     // Check for duplicate complaint
     if (invalidFields.length === 0) {

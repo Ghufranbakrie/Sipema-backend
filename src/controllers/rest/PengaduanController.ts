@@ -4,11 +4,14 @@ import { handleServiceErrorWithResponse, response_created, response_success } fr
 import { PengaduanDTO } from "$entities/Pengaduan"
 import { FilteringQueryV2 } from "$entities/Query"
 import { checkFilteringQueryV2 } from "$controllers/helpers/CheckFilteringQuery"
+import { UserJWTDAO } from "$entities/User"
 
 export async function create(c: Context): Promise<TypedResponse> {
     const data: PengaduanDTO = await c.req.json();
+    const user: UserJWTDAO = c.get("jwtPayload");
 
-    const serviceResponse = await PengaduanService.create(data);
+
+    const serviceResponse = await PengaduanService.create(data, user);
 
     if (!serviceResponse.status) {
         return handleServiceErrorWithResponse(c, serviceResponse)
@@ -19,8 +22,9 @@ export async function create(c: Context): Promise<TypedResponse> {
 
 export async function getAll(c: Context): Promise<TypedResponse> {
     const filters: FilteringQueryV2 = c.get("filters") || checkFilteringQueryV2(c);
+    const user: UserJWTDAO = c.get("jwtPayload");
 
-    const serviceResponse = await PengaduanService.getAll(filters)
+    const serviceResponse = await PengaduanService.getAll(filters, user)
 
     if (!serviceResponse.status) {
         return handleServiceErrorWithResponse(c, serviceResponse)

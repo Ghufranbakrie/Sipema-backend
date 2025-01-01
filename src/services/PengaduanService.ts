@@ -1,19 +1,24 @@
 import { FilteringQueryV2, PagedList } from '$entities/Query';
 import { INTERNAL_SERVER_ERROR_SERVICE_RESPONSE, INVALID_ID_SERVICE_RESPONSE, ServiceResponse } from '$entities/Service';
 import { prisma } from '$utils/prisma.utils';
-import { Pengaduan } from '@prisma/client';
+import { Pengaduan, Roles } from '@prisma/client';
 import { PengaduanDTO } from '$entities/Pengaduan';
 import { ErrorHandler } from '$utils/errorHandler';
 import Logger from '$pkg/logger';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { buildFilterQueryLimitOffsetV2 } from './helpers/FilterQueryV2';
+import { UserJWTDAO } from '$entities/User';
+
 
 export type CreateResponse = Pengaduan | {}
-export async function create(data: PengaduanDTO): Promise<ServiceResponse<CreateResponse>> {
+export async function create(data: PengaduanDTO, user: UserJWTDAO): Promise<ServiceResponse<CreateResponse>> {
     try {
         // Create pengaduan
         const pengaduan = await prisma.pengaduan.create({
-            data
+            data: {
+                ...data,
+                pelaporId: user.no_identitas
+            }
         });
 
         return {
@@ -40,21 +45,25 @@ export async function create(data: PengaduanDTO): Promise<ServiceResponse<Create
 }
 
 export type GetAllResponse = PagedList<Pengaduan[]> | {}
-export async function getAll(filters: FilteringQueryV2): Promise<ServiceResponse<GetAllResponse>> {
+export async function getAll(filters: FilteringQueryV2, user: UserJWTDAO): Promise<ServiceResponse<GetAllResponse>> {
     try {
         const usedFilters = buildFilterQueryLimitOffsetV2(filters)
         usedFilters.include = {
+            pelaporId: false,
             kategori: {
                 select: {
                     nama: true
                 }
             },
-            pelapor: {
+            pelapor: user.role === Roles.PETUGAS_SUPER ? {
                 select: {
                     name: true,
-                    no_identitas: true
+                    no_identitas: true,
+                    email: true,
+                    role: true,
+                    program_studi: true
                 }
-            },
+            } : false,
             unit: {
                 select: {
                     nama_unit: true,
@@ -62,7 +71,7 @@ export async function getAll(filters: FilteringQueryV2): Promise<ServiceResponse
                     petugas: {
                         select: {
                             no_identitas: true,
-                            name: true
+                            name: true,
                         }
                     }
                 },

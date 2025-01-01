@@ -5,8 +5,10 @@ import { prisma } from '$utils/prisma.utils';
 import { PengaduanMasyarakat } from '@prisma/client';
 import { PengaduanMasyarakatDTO } from '$entities/PengaduanMasyarakat';
 import { buildFilterQueryLimitOffsetV2 } from './helpers/FilterQueryV2';
+import { UserJWTDAO } from '$entities/User';
+import WaService from './waService';
 
-
+const waService = new WaService();
 
 export type CreateResponse = PengaduanMasyarakat | {};
 export async function create(data: PengaduanMasyarakatDTO): Promise<ServiceResponse<CreateResponse>> {
@@ -16,6 +18,20 @@ export async function create(data: PengaduanMasyarakatDTO): Promise<ServiceRespo
         const pengaduan = await prisma.pengaduanMasyarakat.create({
             data
         });
+
+        // Prepare WhatsApp template data
+        const templateData = {
+            nama: data.nama || 'Pengguna',
+            judul: 'Pengaduan Baru',
+            desc: data.deskripsi || '',
+            date: new Date().toLocaleDateString('id-ID'),
+            status: 'pending'
+        };
+
+        // Send WhatsApp notification
+        if (data.no_telphone) {
+            await waService.sendMessage(data.no_telphone, templateData);
+        }
 
         return {
             status: true,
@@ -28,9 +44,25 @@ export async function create(data: PengaduanMasyarakatDTO): Promise<ServiceRespo
 }
 
 export type GetAllResponse = PagedList<PengaduanMasyarakat[]> | {}
-export async function getAll(filters: FilteringQueryV2): Promise<ServiceResponse<GetAllResponse>> {
+export async function getAll(filters: FilteringQueryV2, user: UserJWTDAO): Promise<ServiceResponse<GetAllResponse>> {
     try {
         const usedFilters = buildFilterQueryLimitOffsetV2(filters)
+        usedFilters.include = {
+            no_telphone: false,
+            nama: false,
+            unit: {
+                select: {
+                    nama_unit: true,
+                    petugas: {
+                        select: {
+                            no_identitas: true,
+                            name: true,
+                        }
+                    }
+                },
+
+            }
+        }
 
         const [pengaduanMasyarakat, totalData] = await Promise.all([
             prisma.pengaduanMasyarakat.findMany(usedFilters),
