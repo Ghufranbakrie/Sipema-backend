@@ -1,30 +1,26 @@
-// waService.ts
+
 import axios from 'axios';
 import { ServiceResponse, INTERNAL_SERVER_ERROR_SERVICE_RESPONSE } from '$entities/Service';
 import Logger from '$pkg/logger';
+import { PengaduanMasyarakat } from '@prisma/client';
+import { PengaduanMasyarakatDTO } from '$entities/PengaduanMasyarakat';
+import { getStatusMessage } from '$utils/whatsaapp.utils';
 
 export type SendMessageResponse = { success: boolean } | {};
 
-interface SipenaTemplateData {
-    nama: string;
-    judul: string;
-    desc: string;
-    date: string;
-    status: string;
-}
 
 class WaService {
     private apiUrl: string;
     private token: string;
 
     constructor() {
-        this.apiUrl = 'https://graph.facebook.com/v21.0/518032181394389/messages';
+        this.apiUrl = 'https://graph.facebook.com/v21.0/498746269997375/messages';
         this.token = process.env.WHATSAPP_TOKEN || '';
     }
 
     public async sendMessage(
         to: string,
-        templateData: SipenaTemplateData
+        templateData: PengaduanMasyarakatDTO
     ): Promise<ServiceResponse<SendMessageResponse>> {
         const data = {
             messaging_product: 'whatsapp',
@@ -32,20 +28,23 @@ class WaService {
             to,
             type: 'template',
             template: {
-                name: 'template_test',
+                name: 'create_pelporan',
                 language: {
-                    code: 'en'
+                    code: 'id'
                 },
                 components: [
                     {
                         type: 'body',
                         parameters: [
                             { type: 'text', text: templateData.nama },
-                            { type: 'text', text: '#' + Math.random().toString().slice(2, 11) }, // Generate random number
+                            { type: 'text', text: templateData.id },
                             { type: 'text', text: templateData.judul },
-                            { type: 'text', text: templateData.desc },
-                            { type: 'text', text: templateData.date },
-                            { type: 'text', text: templateData.status }
+                            { type: 'text', text: templateData.deskripsi },
+                            { type: 'text', text: new Date().toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                            })},
                         ]
                     }
                 ]
@@ -64,8 +63,68 @@ class WaService {
                 status: true,
                 data: { success: true }
             };
+        } catch (error: any) {
+            console.error('WhatsApp API Error:', {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                responseData: error.response?.data,
+                requestData: data
+            });
+
+            return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE;
+        }
+    }
+
+    public async sendStatusUpdate(
+        to: string,
+        templateData: PengaduanMasyarakat
+    ): Promise<ServiceResponse<SendMessageResponse>> {
+        const data = {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to,
+            type: 'template',
+            template: {
+                name: 'update_status',
+                language: {
+                    code: 'id'
+                },
+                components: [
+                    {
+                        type: 'body',
+                        parameters: [
+                            { type: 'text', text: templateData.nama },
+                            { type: 'text', text: templateData.id },
+                            { type: 'text', text: getStatusMessage(templateData.status) },
+                            { type: 'text', text: templateData.judul },
+                            { type: 'text', text: templateData.deskripsi },
+                            { type: 'text', text: new Date(templateData.createdAt).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                            })},
+                            { type: 'text', text: templateData.response || 'Laporan Anda sedang diproses' }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        try {
+            const response = await axios.post(this.apiUrl, data, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            Logger.info('Status update sent successfully:', response.data);
+            return {
+                status: true,
+                data: { success: true }
+            };
         } catch (error) {
-            Logger.error(`whatsAppService.sendMessage: ${error}`);
+            Logger.error(`whatsAppService.sendStatusUpdate: ${error}`);
             return INTERNAL_SERVER_ERROR_SERVICE_RESPONSE;
         }
     }

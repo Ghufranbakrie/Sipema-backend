@@ -2,6 +2,7 @@
 import { Status } from "@prisma/client";
 
 export interface PengaduanMasyarakatDTO {
+    id: string;
     judul: string;
     deskripsi: string;
     status: Status;

@@ -17,7 +17,7 @@ export async function seedAdmin(prisma: PrismaClient) {
             data: {
                 id: ulid(),
                 name: "Admin",
-                no_identitas: "admin1",
+                no_identitas: "1001",
                 password: hashedPassword,
                 email: "admin@test.com",
                 role: Roles.ADMIN,
@@ -34,7 +34,7 @@ export async function seedAdmin(prisma: PrismaClient) {
             data: {
                 id: ulid(),
                 name: "User",
-                no_identitas: "user1",
+                no_identitas: "2001",
                 password: hashedPassword,
                 email: "user@test.com",
                 role: Roles.USER,
@@ -51,7 +51,7 @@ export async function seedAdmin(prisma: PrismaClient) {
             data: {
                 id: ulid(),
                 name: "Petugas Super",
-                no_identitas: "super1",
+                no_identitas: "3001",
                 password: hashedPassword,
                 email: "super@test.com",
                 role: Roles.PETUGAS_SUPER,
@@ -76,7 +76,7 @@ export async function seedAdmin(prisma: PrismaClient) {
             data: {
                 id: ulid(),
                 name: "Petugas Unit TI",
-                no_identitas: "petugas1",
+                no_identitas: "4001",
                 password: hashedPassword,
                 email: "petugas@test.com",
                 role: Roles.PETUGAS,

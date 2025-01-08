@@ -20,17 +20,9 @@ export async function create(data: PengaduanMasyarakatDTO): Promise<ServiceRespo
         });
 
         // Prepare WhatsApp template data
-        const templateData = {
-            nama: data.nama || 'Pengguna',
-            judul: 'Pengaduan Baru',
-            desc: data.deskripsi || '',
-            date: new Date().toLocaleDateString('id-ID'),
-            status: 'pending'
-        };
-
         // Send WhatsApp notification
         if (data.no_telphone) {
-            await waService.sendMessage(data.no_telphone, templateData);
+            await waService.sendMessage(data.no_telphone, data);
         }
 
         return {
@@ -125,6 +117,13 @@ export async function update(id: string, data: PengaduanMasyarakatDTO): Promise<
             where: { id },
             data
         });
+
+             // Send WhatsApp notification
+             const waService = new WaService();
+             await waService.sendStatusUpdate(
+                 pengaduanMasyarakat.no_telphone,
+                 pengaduanMasyarakat
+             );
 
         return {
             status: true,
